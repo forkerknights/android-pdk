@@ -1,6 +1,8 @@
 package com.pinterest.android.pdk;
 
 import android.util.Log;
+import android.util.Base64;
+import android.graphics.Bitmap;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -13,6 +15,7 @@ import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.io.ByteArrayOutputStream;
 
 public class Utils {
 
@@ -89,5 +92,12 @@ public class Utils {
             builder.append(Integer.toHexString(b & 0x0f));
         }
         return builder.toString();
+    }
+
+    public static String base64String(Bitmap bitmap) {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
+        String b64Str = Base64.encodeToString(baos.toByteArray(), Base64.NO_WRAP);
+        return b64Str;
     }
 }
