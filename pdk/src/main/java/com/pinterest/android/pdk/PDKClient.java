@@ -129,11 +129,6 @@ public class PDKClient {
         PDKClient._debugMode = debugMode;
     }
 
-
-    // ================================================================================
-    // API Interface
-    // ================================================================================
-
     /**
      * Set Oauth Access token
      */
@@ -150,6 +145,15 @@ public class PDKClient {
     public String getAccessToken() {
         return _accessToken;
     }
+
+    /**
+     * Let the caller application to know if it is authenticated.
+     */
+    public static boolean isAuthenticated() { return _isAuthenticated; }
+
+    // ================================================================================
+    // API Interface
+    // ================================================================================
 
     public void logout() {
         _accessToken = null;
