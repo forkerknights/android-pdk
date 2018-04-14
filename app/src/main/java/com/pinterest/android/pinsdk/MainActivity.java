@@ -34,9 +34,9 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
         if(appID.equals("defineIt")) {
             Toast.makeText(this, "You need to define the application id", Toast.LENGTH_LONG).show();
         }
+        PDKClient.setDebugMode(true);
         pdkClient = PDKClient.configureInstance(this, appID);
         pdkClient.onConnect(this);
-        pdkClient.setDebugMode(true);
     }
 
     @Override

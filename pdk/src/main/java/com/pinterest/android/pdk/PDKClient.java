@@ -74,6 +74,7 @@ public class PDKClient {
     private static Set<String> _requestedScopes;
     private static PDKClient _mInstance = null;
     private PDKCallback _authCallback;
+    private PDKCallback _onConnectCallback;
     private static RequestQueue _requestQueue;
 
     private static boolean _isConfigured;
@@ -103,7 +104,7 @@ public class PDKClient {
 
         _accessToken = restoreAccessToken();
         _scopes = restoreScopes();
-        _isAuthenticated = _accessToken != null;
+        // _isAuthenticated = _accessToken != null; // Wrong! It may be expired
         return PDKClient.getInstance();
     }
 
@@ -175,7 +176,13 @@ public class PDKClient {
         return true;
     }
 
+    public void silentLogin (final Context context, final List<String> permissions, final PDKCallback callback) {
+        login(context, true, permissions, callback);
+    }
+
     public void login (final Context context, final List<String> permissions, final PDKCallback callback) {
+        login(context, false, permissions, callback);
+        /* // Old logic
         _authCallback = callback;
         if (!checkAppNumber(context, _clientId)) {
             if (callback != null) callback.onFailure(new PDKException("Unable to log in because multiple apps are responding to the login request."));
@@ -211,6 +218,7 @@ public class PDKClient {
         } else {
             initiateLogin(context, permissions);
         }
+        */
     }
 
     public void onOauthResponse(int requestCode, int resultCode, Intent data) {
@@ -226,15 +234,30 @@ public class PDKClient {
     }
 
     public void onConnect(Context context) {
+        onConnect(context,null);
+    }
+    public void onConnect(Context context, PDKCallback callback) {
+        _onConnectCallback = callback;
         if (!(context instanceof Activity)) {
-            if (_authCallback != null) _authCallback.onFailure(new PDKException("Please pass Activity context with onConnect request"));
+            if(_onConnectCallback != null) {
+                _onConnectCallback.onExecutionAborted("Please pass Activity context with onConnect request");
+            } else if (_authCallback != null) {
+                _authCallback.onFailure(new PDKException("Please pass Activity context with onConnect request"));
+            }
             return;
         }
         Activity activity = (Activity) context;
+        boolean oAuthTriggered = false;
         if (Intent.ACTION_VIEW.equals(activity.getIntent().getAction())) {
             Uri uri = activity.getIntent().getData();
-            if (uri != null && uri.toString().contains("pdk" + _clientId + "://"))
+            if (uri != null && uri.toString().contains("pdk" + _clientId + "://")) {
+                oAuthTriggered = true;
                 onOauthResponse(uri.toString());
+            }
+
+        }
+        if(_onConnectCallback != null && !oAuthTriggered) {
+            _onConnectCallback.onExecutionAborted("It wasn't necessary to trigger the OAuth");
         }
     }
 
@@ -417,7 +440,26 @@ public class PDKClient {
     // Internal
     // ================================================================================
 
+    /**
+     * CAUTION: This should be called only after verifying the access token
+     */
+    private void saveTokenDetails(JSONObject token) {
+        try {
+            Set<String> appScopes = new HashSet<String>();
+            JSONArray scopesArray = token.getJSONArray("scopes");
+            int size = scopesArray.length();
+            for (int i = 0; i < size; i++) {
+                appScopes.add(scopesArray.get(i).toString());
+            }
+            _scopes = appScopes;
+            saveScopes(appScopes);
+        } catch (JSONException e) {
+            Utils.loge("PDK: ", e.getLocalizedMessage());
+        }
+    }
+
     private void onOauthResponse(String result) {
+        boolean errorFlag = false;
         if (!Utils.isEmpty(result)) {
             Uri uri = Uri.parse(result);
             if (uri.getQueryParameter("access_token") != null) {
@@ -425,20 +467,114 @@ public class PDKClient {
                 try {
                     token = java.net.URLDecoder.decode(token, "UTF-8");
                 } catch (UnsupportedEncodingException e) {
+                    errorFlag = true;
                     Utils.loge(e.getLocalizedMessage());
                 }
+                /* // Old logic
                 _accessToken = token;
                 _isAuthenticated = true;
                 PDKClient.getInstance().getMe(_authCallback);
                 saveAccessToken(_accessToken);
-            }
-            if (uri.getQueryParameter("error") != null) {
+                */
+                _accessToken = token; // Save the access token.
+                saveAccessToken(token);
+                Utils.log("Token retrieved and saved");
+                // At this point we can be quite sure that the token is valid.
+                // Let's check the permissions.
+                getPath("oauth/inspect", null, new PDKCallback() {
+                    @Override
+                    public void onSuccess(PDKResponse response) {
+                        if (verifyAccessToken(response.getData())) {
+                            Utils.log("Token verified");
+                            // Save access token and scopes
+                            saveTokenDetails((JSONObject) response.getData());
+                            Utils.log("Scopes saved");
+                            _isAuthenticated = true;
+                            if(_onConnectCallback != null) {
+                                PDKClient.getInstance().getMe(_onConnectCallback);
+                            } else {
+                                PDKClient.getInstance().getMe(_authCallback);
+                            }
+                        } else {
+                            if(_onConnectCallback != null) {
+                                _onConnectCallback.onExecutionAborted("Token not valid");
+                            } else if(_authCallback != null) {
+                                _authCallback.onFailure(new PDKException("PDK: Token not valid"));
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(PDKException exception) {
+                        if(_onConnectCallback != null) {
+                            _onConnectCallback.onFailure(exception);
+                        } else if(_authCallback != null) {
+                            _authCallback.onFailure(exception);
+                        }
+                    }
+                });
+            } else if (uri.getQueryParameter("error") != null) {
+                errorFlag = true;
                 String error = uri.getQueryParameter("error");
                 Utils.loge("PDK: authentication error: %s", error);
             }
         }
-        if (_accessToken == null)
-            _authCallback.onFailure(new PDKException("PDK: authentication failed"));
+
+        if (errorFlag) {
+            if (_onConnectCallback != null) {
+                _onConnectCallback.onFailure(new PDKException("PDK: authentication failed"));
+            } else {
+                _authCallback.onFailure(new PDKException("PDK: authentication failed"));
+            }
+        }
+    }
+
+
+    private void login (final Context context, final boolean silent, final List<String> permissions, final PDKCallback callback) {
+        _authCallback = callback;
+        if (!checkAppNumber(context, _clientId)) {
+            if (callback != null) callback.onFailure(new PDKException("Unable to log in because multiple apps are responding to the login request."));
+            return;
+        }
+        if (Utils.isEmpty(permissions)) {
+            if (callback != null) callback.onFailure(new PDKException("Scopes cannot be empty"));
+            return;
+        }
+        if (!(context instanceof Activity)) {
+            if (callback != null) callback.onFailure(new PDKException("Please pass Activity context with login request"));
+            return;
+        }
+        _requestedScopes = new HashSet<String>();
+        _requestedScopes.addAll(permissions);
+        Utils.log("Access token on login: "+_accessToken);
+        Utils.log("Scopes on login: "+_scopes);
+        if (!Utils.isEmpty(_accessToken) && !Utils.isEmpty(_scopes)) {
+            getPath("oauth/inspect", null, new PDKCallback() {
+                @Override
+                public void onSuccess(PDKResponse response) {
+                    if (verifyAccessToken(response.getData())) {
+                        _isAuthenticated = true;
+                        PDKClient.getInstance().getMe(_authCallback);
+                    } else {
+                        initiateLogin(context, permissions);
+                    }
+                }
+
+                @Override
+                public void onFailure(PDKException exception) {
+                    initiateLogin(context, permissions);
+                }
+            });
+        } else if(!silent) {
+            // This maps the behaviour of the iOS PDK
+            // See: https://github.com/pinterest/ios-pdk/blob/798ac68e083324195c05732c0dceeda8d363df0a/Pod/Classes/PDKClient.m#L193
+            initiateLogin(context, permissions);
+        } else if(silent && Utils.isEmpty(_accessToken)) {
+            // silent was yes, but we did not have a cached token. that counts as a failure.
+            // At least that's what the comment on the iOS PDK says.
+            // But I think it doesn't apply here.
+            // callback.onFailure(new PDKException("PDK: Token not found"));
+        }
     }
 
     private void initiateLogin(Context c, List<String> permissions) {

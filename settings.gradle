@@ -1,1 +1,1 @@
-include ':app', ':pdk'
+include ':app', ':pdk', ':greting-sample'

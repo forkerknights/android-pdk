@@ -42,6 +42,13 @@ public class PDKCallback implements Response.Listener<JSONObject>, Response.Erro
     public void onFailure(PDKException exception) {
     }
 
+    /**
+     * It's called when the execution of the related action was aborted for some reason
+     * (For eg: invalid parameters).
+     * @param cause A message indicating the cause that aborted the action
+     */
+    public void onExecutionAborted(String cause) {}
+
     public void setResponseHeaders(Map<String, String> map) {
         _responseHeaders = map;
     }

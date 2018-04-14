@@ -1,0 +1,37 @@
+// Recover the clientId from the properties file
+def clientId = getClientId()
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+
+
+    defaultConfig {
+        applicationId "com.github.forkerknights"
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.compileSdk
+        versionCode 1
+        versionName "1.0"
+        manifestPlaceholders = [appId:clientId]
+    }
+
+    buildTypes {
+        buildTypes.each {
+            it.resValue "string", "app_id", clientId
+        }
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    compile project(':pdk')
+    compile deps.support.appcompat
+    compile deps.support.compat
+
+}
