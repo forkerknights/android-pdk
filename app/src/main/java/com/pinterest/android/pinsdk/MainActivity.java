@@ -6,6 +6,7 @@ import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.pinterest.android.pdk.PDKCallback;
 import com.pinterest.android.pdk.PDKClient;
@@ -21,7 +22,7 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
     private PDKClient pdkClient;
     Button loginButton;
-    private static final String appID = "YOUR_APP_ID";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,6 +30,10 @@ public class MainActivity extends ActionBarActivity implements View.OnClickListe
 
         loginButton = (Button) findViewById(R.id.login);
         loginButton.setOnClickListener(this);
+        String appID = getString(R.string.app_id);
+        if(appID.equals("defineIt")) {
+            Toast.makeText(this, "You need to define the application id", Toast.LENGTH_LONG).show();
+        }
         pdkClient = PDKClient.configureInstance(this, appID);
         pdkClient.onConnect(this);
         pdkClient.setDebugMode(true);

@@ -32,6 +32,20 @@ buildscript {
     }
 }
 
+def getClientId() {
+    return getClientId('clientId')
+}
+
+def getClientId(key) {
+    Properties properties = new Properties()
+    // Create a file named local_api.properties on the root project
+    // and create a property named clientId with your AppID
+    if(project.rootProject.file('local_api.properties').exists()) {
+        properties.load(project.rootProject.file('local_api.properties').newDataInputStream())
+    }
+    return properties.getProperty(key, 'defineIt')
+}
+
 allprojects {
     repositories {
         jcenter()

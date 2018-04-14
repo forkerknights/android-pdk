@@ -1,3 +1,16 @@
+# Unofficial Pinterest SDK Fork
+
+This repository has been created for the purpose of providing
+community-based support for those people who just can't wait
+for Pinterest staff merge their Pull Requests. I will try my best to
+actively maintain this repo with the help of the community.
+
+For the updated README for this fork check out the [README_FORK.md](README_FORK.md)
+
+**DISCLAIMER: This is not the official SDK. Use it at your own risk.**
+
+## Original content below
+
 # PinterestSDK for Android
 
 The PinterestSDK for Android will allow you to authenticate an account with Pinterest and make requests on behalf of the authenticated user. For details on the supported endpoint, visit [the Pinterest API](https://developers.pinterest.com/docs/api/overview/).

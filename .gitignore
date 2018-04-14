@@ -8,6 +8,7 @@ out/
 *.iml
 proguard_logs/
 local.properties
+local_api.properties
 proguard/
 target/
 classes/
