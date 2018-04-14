@@ -13,10 +13,10 @@ builds
 a file named `local_api.properties` on the root project with a property named
 `clientId` <br>
 Example: `clientId=12345678980`
+- Implemented a silent login and provided a sample application using it.
 
 ## Planned changes
 
-- Implement a silent login and provide a sample application using it.
 - Merge all exisiting PRs on the original repo to this one (After
 reviewing them).
 - Update the data model to add a class for the Pin's images
