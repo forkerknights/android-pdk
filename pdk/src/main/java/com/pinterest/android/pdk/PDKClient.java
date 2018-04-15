@@ -571,9 +571,8 @@ public class PDKClient {
             initiateLogin(context, permissions);
         } else if(silent && Utils.isEmpty(_accessToken)) {
             // silent was yes, but we did not have a cached token. that counts as a failure.
-            // At least that's what the comment on the iOS PDK says.
-            // But I think it doesn't apply here.
-            // callback.onFailure(new PDKException("PDK: Token not found"));
+            // It's necessary to notify the caller application that the login was not successfull.
+            callback.onFailure(new PDKException("PDK: Token not found"));
         }
     }
 

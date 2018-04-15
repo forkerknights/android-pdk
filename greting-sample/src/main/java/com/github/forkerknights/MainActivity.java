@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -29,11 +30,13 @@ public class MainActivity extends ActionBarActivity {
             PDKClient.PDKCLIENT_PERMISSION_WRITE_PUBLIC
     };
     private static final String GREETING_TAG = "GREETING_SAMPLE";
+    private static final int LOGIN_MODE = 1;
+    private static final int LOGOUT_MODE = 2;
 
     private PDKClient pdkClient;
-    private Handler mHandler = new Handler();
     private Button btnLogin;
     private Button btnLogout;
+    private LinearLayout llButtons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +46,7 @@ public class MainActivity extends ActionBarActivity {
         Button btnBoards = (Button) findViewById(R.id.btnListBoards);
         btnLogin = (Button) findViewById(R.id.btnLogin);
         btnLogout = (Button) findViewById(R.id.btnLogout);
+        llButtons = (LinearLayout) findViewById(R.id.llButtons);
         btnBoards.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -105,8 +109,7 @@ public class MainActivity extends ActionBarActivity {
     private void btnLogout_onClick() {
         Toast.makeText(this, "Good bye", Toast.LENGTH_LONG).show();
         PDKClient.getInstance().logout();
-        btnLogin.setVisibility(View.VISIBLE);
-        btnLogout.setVisibility(View.GONE);
+        setButtonsMode(LOGIN_MODE);
     }
 
     private void btnLogin_onClick() {
@@ -123,10 +126,36 @@ public class MainActivity extends ActionBarActivity {
         });
     }
 
+    private synchronized void setButtonsMode(int mode) {
+        Log.d(GREETING_TAG, "Login mode: "+((mode==LOGIN_MODE)?"Login":"Logout"));
+        int[] expectedVisibilities = new int[2];
+        switch (mode) {
+            case LOGIN_MODE:
+                expectedVisibilities[0] = View.VISIBLE;
+                expectedVisibilities[1] = View.GONE;
+                btnLogin.setVisibility(View.VISIBLE);
+                btnLogout.setVisibility(View.GONE);
+                break;
+            case LOGOUT_MODE:
+                expectedVisibilities[0] = View.GONE;
+                expectedVisibilities[1] = View.VISIBLE;
+                btnLogin.setVisibility(View.GONE);
+                btnLogout.setVisibility(View.VISIBLE);
+                break;
+        }
+        int[] actualVisibilites = new int[2];
+        actualVisibilites[0] = btnLogin.getVisibility();
+        actualVisibilites[1] = btnLogout.getVisibility();
+        if(!Arrays.equals(expectedVisibilities, actualVisibilites)) {
+            Log.d(GREETING_TAG, "Visibilites didn't update properly");
+            btnLogin.setVisibility(expectedVisibilities[0]);
+            btnLogout.setVisibility(expectedVisibilities[1]);
+        }
+    }
+
     private void onLoginSuccess(PDKResponse response, boolean silent) {
         Log.d(GREETING_TAG, "onLoginSuccess (silent="+silent+")");
-        btnLogin.setVisibility(View.GONE);
-        btnLogout.setVisibility(View.VISIBLE);
+        setButtonsMode(LOGOUT_MODE);
         String user = response.getUser().getFirstName();
         if(silent) {
             Toast.makeText(this, "Welcome back "+user, Toast.LENGTH_LONG).show();
@@ -137,12 +166,12 @@ public class MainActivity extends ActionBarActivity {
 
     private void onLoginFailure(PDKException exception, boolean silent) {
         Log.d(GREETING_TAG, "onLoginFailure (message="+exception.getMessage()+", silent="+silent+")");
-        btnLogin.setVisibility(View.VISIBLE);
-        btnLogout.setVisibility(View.GONE);
         if(!silent) {
-            // exception.printStackTrace();
+            setButtonsMode(LOGIN_MODE);
             Toast.makeText(this, "Unable to login", Toast.LENGTH_LONG).show();
             Toast.makeText(this,"Reason: "+exception.getMessage(), Toast.LENGTH_LONG).show();
+        } else if(silent && pdkClient.getAccessToken() == null) {
+            setButtonsMode(LOGIN_MODE);
         }
     }
 
@@ -150,7 +179,7 @@ public class MainActivity extends ActionBarActivity {
         if(!PDKClient.isAuthenticated()) {
             Toast.makeText(this, "You need to login first", Toast.LENGTH_LONG).show();
         } else {
-            PDKClient.getInstance().getMyBoards("name", new PDKCallback() {
+            pdkClient.getMyBoards("name", new PDKCallback() {
                 @Override
                 public void onSuccess(PDKResponse response) {
                     fillBoardsLv(response);
