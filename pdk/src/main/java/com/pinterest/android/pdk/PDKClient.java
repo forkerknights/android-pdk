@@ -84,6 +84,7 @@ public class PDKClient {
     private static final String PINTEREST_PACKAGE = "com.pinterest";
     private static final String PINTEREST_OAUTH_ACTIVITY = "com.pinterest.sdk.PinterestOauthActivity";
     private static final String PINTEREST_SIGNATURE_HASH = "b6a74dbcb894b0f73d8c485c72eb1247a8f027ca";
+    private static final int MAX_PIXELS_FOR_B64 = 1000 * 1000; // TODO: Adjust to a proper value
 
     private PDKClient() {
 
@@ -430,8 +431,12 @@ public class PDKClient {
 
     public void createPin(String note, String boardId, Bitmap image, String link, PDKCallback callback) {
         if (Utils.isEmpty(note) || Utils.isEmpty(boardId) || image == null) {
-            if (callback != null) callback.onFailure(new PDKException("Board Id, note, Image cannot be empty"));
+            if (callback != null) callback.onFailure(new PDKException("Board Id, note and Image cannot be empty"));
             return;
+        }
+        int numPixels = image.getHeight() * image.getWidth();
+        if(numPixels > MAX_PIXELS_FOR_B64) {
+            callback.onFailure(new PDKException("Image too large to encode to Base 64."));
         }
 
         HashMap<String, String> params = new HashMap<String, String>();

@@ -24,11 +24,7 @@ public class PDKBoard extends PDKModel {
     private Integer collaboratorsCount;
     private Integer followersCount;
     private String imageUrl;
-    private Map<String, String> imageUrlsMap;
-
-    public PDKBoard() {
-        this.imageUrlsMap = new HashMap<>();
-    }
+    private Map<String, String> imageUrlsMap = new HashMap<>();;
 
     public void setUid(String uid) {
         this.uid = uid;

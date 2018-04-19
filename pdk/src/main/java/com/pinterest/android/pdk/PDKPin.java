@@ -27,11 +27,7 @@ public class PDKPin extends PDKModel {
     private Integer commentCount;
     private Integer repinCount;
     private String imageUrl;
-    private Map<String, String> imageUrlsMap;
-
-    public PDKPin() {
-        this.imageUrlsMap = new HashMap<>();
-    }
+    private Map<String, String> imageUrlsMap = new HashMap<>();
 
     public static PDKPin makePin(Object obj) {
         PDKPin pin = new PDKPin();
