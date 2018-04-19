@@ -12,6 +12,7 @@ import android.content.pm.Signature;
 import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
+import android.graphics.Bitmap;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -424,6 +425,20 @@ public class PDKClient {
         params.put("note", note);
         if (!Utils.isEmpty(link)) params.put("link", link);
         if (!Utils.isEmpty(imageUrl)) params.put("image_url", imageUrl);
+        postPath(PINS, params, callback);
+    }
+
+    public void createPin(String note, String boardId, Bitmap image, String link, PDKCallback callback) {
+        if (Utils.isEmpty(note) || Utils.isEmpty(boardId) || image == null) {
+            if (callback != null) callback.onFailure(new PDKException("Board Id, note, Image cannot be empty"));
+            return;
+        }
+
+        HashMap<String, String> params = new HashMap<String, String>();
+        params.put("board", boardId);
+        params.put("note", note);
+        params.put("image_base64", Utils.base64String(image));
+        if (!Utils.isEmpty(link)) params.put("link", link);
         postPath(PINS, params, callback);
     }
 
