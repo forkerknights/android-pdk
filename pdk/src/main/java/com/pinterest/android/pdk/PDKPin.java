@@ -8,8 +8,10 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class PDKPin extends PDKModel {
 
@@ -25,6 +27,11 @@ public class PDKPin extends PDKModel {
     private Integer commentCount;
     private Integer repinCount;
     private String imageUrl;
+    private Map<String, String> imageUrlsMap;
+
+    public PDKPin() {
+        this.imageUrlsMap = new HashMap<>();
+    }
 
     public static PDKPin makePin(Object obj) {
         PDKPin pin = new PDKPin();
@@ -81,7 +88,9 @@ public class PDKPin extends PDKModel {
                         if (imageObj.get(key) instanceof JSONObject) {
                             JSONObject iObj = imageObj.getJSONObject(key);
                             if (iObj.has("url")) {
-                                pin.setImageUrl(iObj.getString("url"));
+                                String url = iObj.getString("url");
+                                pin.addToUrlsMap(key, url);
+                                pin.setImageUrl(url);
                             }
                         }
                     }
@@ -111,6 +120,12 @@ public class PDKPin extends PDKModel {
             Utils.loge("PDK: PDKPinList parse JSON error %s", e.getLocalizedMessage());
         }
         return pinList;
+    }
+
+    private void addToUrlsMap(String key, String url) {
+        if (!imageUrlsMap.containsKey(key)) {
+			imageUrlsMap.put(key, url);
+		}
     }
 
     @Override
@@ -161,6 +176,14 @@ public class PDKPin extends PDKModel {
     public String getImageUrl() {
         return imageUrl;
     }
+
+	public String getImageUrl(String size) {
+		if (imageUrlsMap != null && imageUrlsMap.containsKey(size)) {
+			return imageUrlsMap.get(size);
+		}
+		// Return the default url if the requested size is not available
+		return getImageUrl();
+	}
 
     public void setUid(String uid) {
 

@@ -8,8 +8,10 @@ import org.json.JSONObject;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 public class PDKBoard extends PDKModel {
 
@@ -22,6 +24,11 @@ public class PDKBoard extends PDKModel {
     private Integer collaboratorsCount;
     private Integer followersCount;
     private String imageUrl;
+    private Map<String, String> imageUrlsMap;
+
+    public PDKBoard() {
+        this.imageUrlsMap = new HashMap<>();
+    }
 
     public void setUid(String uid) {
         this.uid = uid;
@@ -96,6 +103,12 @@ public class PDKBoard extends PDKModel {
         return imageUrl;
     }
 
+    private void addToUrlsMap(String key, String url) {
+        if (!imageUrlsMap.containsKey(key)) {
+            imageUrlsMap.put(key, url);
+        }
+    }
+
     public static PDKBoard makeBoard(Object obj) {
         PDKBoard board = new PDKBoard();
         try {
@@ -138,7 +151,9 @@ public class PDKBoard extends PDKModel {
                         if (imageObj.get(key) instanceof JSONObject) {
                             JSONObject iObj = imageObj.getJSONObject(key);
                             if (iObj.has("url")) {
-                                board.setImageUrl(iObj.getString("url"));
+                                String url = iObj.getString("url");
+                                board.addToUrlsMap(key, url);
+                                board.setImageUrl(url);
                             }
                         }
                     }
