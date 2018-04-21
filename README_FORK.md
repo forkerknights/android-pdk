@@ -14,9 +14,12 @@ a file named `local_api.properties` on the root project with a property named
 `clientId` <br>
 Example: `clientId=12345678980`
 - Implemented a silent login and provided a sample application using it.
+- Implemented support for creating a Pin passing a [Bitmap](https://developer.android.com/reference/android/graphics/Bitmap.html)
+- Implemented support to get Pin's image URLs in different sizes (But it seems that currently Pinterest's API only returns the original image)
 
 ## Planned changes
 
+- Implement utility methods to help developers to handle the new [rate limits](https://developers.pinterest.com/docs/api/overview/#rate-limiting)
 - Merge all exisiting PRs on the original repo to this one (After
 reviewing them).
 - Update the data model to add a class for the Pin's images
