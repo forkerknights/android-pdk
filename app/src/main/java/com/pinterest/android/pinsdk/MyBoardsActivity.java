@@ -1,6 +1,8 @@
 package com.pinterest.android.pinsdk;
 
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,6 +19,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.pinterest.android.pdk.PDKBoard;
 import com.pinterest.android.pdk.PDKCallback;
@@ -56,6 +59,12 @@ public class MyBoardsActivity extends ActionBarActivity {
                 inflater.inflate(R.menu.context_menu_boards, menu);
             }
         });
+        _listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                lv_onItemClick(i);
+            }
+        });
 
         myBoardsCallback = new PDKCallback() {
             @Override
@@ -72,6 +81,14 @@ public class MyBoardsActivity extends ActionBarActivity {
             }
         };
         _loading = true;
+    }
+
+    private void lv_onItemClick(int pos) {
+        String boardId = _boardsAdapter.getBoardList().get(pos).getUid();
+        String boardName = _boardsAdapter.getBoardList().get(pos).getName();
+        ((ClipboardManager)getSystemService(CLIPBOARD_SERVICE))
+                .setPrimaryClip(ClipData.newPlainText(boardName, boardId));
+        Toast.makeText(this, "Board id copied", Toast.LENGTH_LONG).show();
     }
 
     private void fetchBoards() {

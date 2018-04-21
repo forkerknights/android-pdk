@@ -84,7 +84,7 @@ public class PDKClient {
     private static final String PINTEREST_PACKAGE = "com.pinterest";
     private static final String PINTEREST_OAUTH_ACTIVITY = "com.pinterest.sdk.PinterestOauthActivity";
     private static final String PINTEREST_SIGNATURE_HASH = "b6a74dbcb894b0f73d8c485c72eb1247a8f027ca";
-    private static final int MAX_PIXELS_FOR_B64 = 1000 * 1000; // TODO: Adjust to a proper value
+    private static final int MAX_PIXELS_FOR_B64 = 3150000;
 
     private PDKClient() {
 
@@ -389,6 +389,7 @@ public class PDKClient {
     public void deleteBoard(String boardId, PDKCallback callback) {
         if (Utils.isEmpty(boardId)) {
             if (callback != null) callback.onFailure(new PDKException("Board Id cannot be empty"));
+            return;
         }
         String path = BOARDS + boardId + "/";
         deletePath(path, callback);
@@ -436,7 +437,8 @@ public class PDKClient {
         }
         int numPixels = image.getHeight() * image.getWidth();
         if(numPixels > MAX_PIXELS_FOR_B64) {
-            callback.onFailure(new PDKException("Image too large to encode to Base 64."));
+            if (callback != null) callback.onFailure(new PDKException("Image too large to encode to Base 64."));
+            return;
         }
 
         HashMap<String, String> params = new HashMap<String, String>();
@@ -450,6 +452,7 @@ public class PDKClient {
     public void deletePin(String pinId, PDKCallback callback) {
         if (Utils.isEmpty(pinId)) {
             if (callback != null) callback.onFailure(new PDKException("Pin Id cannot be empty"));
+            return;
         }
         String path = PINS + pinId + "/";
         deletePath(path, callback);

@@ -44,13 +44,16 @@
         />
 
     <Button
+        android:id="@+id/save_button"
         android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:text="Save"
-        android:id="@+id/save_button"
-        android:layout_below="@+id/pin_create_link"
-        android:layout_centerHorizontal="true"
-        />
+        android:layout_alignBaseline="@+id/btnSelectImage"
+        android:layout_alignBottom="@+id/btnSelectImage"
+        android:layout_marginLeft="11dp"
+        android:layout_marginStart="11dp"
+        android:layout_toEndOf="@+id/btnSelectImage"
+        android:layout_toRightOf="@+id/btnSelectImage"
+        android:text="Save" />
 
 
     <TextView
@@ -61,5 +64,16 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         />
+
+    <Button
+        android:id="@+id/btnSelectImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/pin_create_link"
+        android:layout_marginLeft="51dp"
+        android:layout_marginStart="51dp"
+        android:text="Select Image" />
 
 </RelativeLayout>
