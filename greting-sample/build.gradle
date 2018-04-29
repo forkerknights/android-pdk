@@ -1,5 +1,7 @@
 // Recover the clientId from the properties file
 def clientId = getClientId()
+def customBaseUrl = getApiProperty('customBaseUrl')
+def customOAuthUrl = getApiProperty('customOAuthUrl')
 
 apply plugin: 'com.android.application'
 
@@ -20,6 +22,8 @@ android {
     buildTypes {
         buildTypes.each {
             it.resValue "string", "app_id", clientId
+            it.resValue "string", "custom_base_url", customBaseUrl
+            it.resValue "string", "custom_oauth_url", customOAuthUrl
         }
         release {
             minifyEnabled false

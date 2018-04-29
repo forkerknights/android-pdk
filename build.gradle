@@ -33,10 +33,10 @@ buildscript {
 }
 
 def getClientId() {
-    return getClientId('clientId')
+    return getApiProperty('clientId')
 }
 
-def getClientId(key) {
+def getApiProperty(key) {
     Properties properties = new Properties()
     // Create a file named local_api.properties on the root project
     // and create a property named clientId with your AppID

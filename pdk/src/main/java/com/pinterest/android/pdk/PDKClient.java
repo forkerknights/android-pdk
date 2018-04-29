@@ -76,6 +76,8 @@ public class PDKClient {
     private static PDKClient _mInstance = null;
     private PDKCallback _authCallback;
     private PDKCallback _onConnectCallback;
+    private String baseUrl = PROD_BASE_API_URL;
+    private String webOAuth = PROD_WEB_OAUTH_URL;
     private static RequestQueue _requestQueue;
 
     private static boolean _isConfigured;
@@ -108,6 +110,32 @@ public class PDKClient {
         _scopes = restoreScopes();
         // _isAuthenticated = _accessToken != null; // Wrong! It may be expired
         return PDKClient.getInstance();
+    }
+
+    /**
+     * Alternative method that allows to specify a custom base url (a mock server for example)
+     */
+    public static PDKClient configureInstance(Context context, String clientId, String baseUrl) {
+        PDKClient instance = configureInstance(context, clientId);
+        if(baseUrl != null) {
+            instance.baseUrl = baseUrl;
+        }
+        return  instance;
+    }
+
+    /**
+     * Alternative method that allows to specify a custom base url (a mock server for example)
+     * and a custom OAuth page url
+     */
+    public static PDKClient configureInstance(Context context, String clientId, String baseUrl, String oauthUrl) {
+        PDKClient instance = configureInstance(context, clientId);
+        if(baseUrl != null) {
+            instance.baseUrl = baseUrl;
+        }
+        if(oauthUrl != null) {
+            instance.webOAuth = oauthUrl;
+        }
+        return  instance;
     }
 
     // ================================================================================
@@ -272,7 +300,7 @@ public class PDKClient {
             if (callback != null) callback.onFailure(new PDKException("Invalid path"));
             return;
         }
-        String url = PROD_BASE_API_URL + path;
+        String url = baseUrl + path;
         if (params == null) params = new HashMap<String, String>();
         if (callback != null) callback.setPath(path);
         if (callback != null) callback.setParams(params);
@@ -285,7 +313,7 @@ public class PDKClient {
             return;
         }
         if (callback != null) callback.setPath(path);
-        String url = PROD_BASE_API_URL + path;
+        String url = baseUrl + path;
         postRequest(url, params, callback);
     }
 
@@ -295,7 +323,7 @@ public class PDKClient {
             return;
         }
         if (callback != null) callback.setPath(path);
-        String url = PROD_BASE_API_URL + path;
+        String url = baseUrl + path;
         deleteRequest(url, null, callback);
     }
 
@@ -305,7 +333,7 @@ public class PDKClient {
             return;
         }
         if (callback != null) callback.setPath(path);
-        String url = PROD_BASE_API_URL + path;
+        String url = baseUrl + path;
         putRequest(url, params, callback);
     }
 
@@ -616,7 +644,7 @@ public class PDKClient {
             paramList.add(new BasicNameValuePair("redirect_uri", "pdk" + _clientId + "://"));
             paramList.add(new BasicNameValuePair("response_type", "token"));
 
-            String url =  Utils.getUrlWithQueryParams(PROD_WEB_OAUTH_URL, paramList);
+            String url =  Utils.getUrlWithQueryParams(webOAuth, paramList);
             Intent oauthIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
             c.startActivity(oauthIntent);
 

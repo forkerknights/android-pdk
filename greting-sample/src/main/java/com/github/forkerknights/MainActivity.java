@@ -43,6 +43,10 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         String appID = getString(R.string.app_id);
+        String customUrl = getString(R.string.custom_base_url);
+        String customOAuth = getString(R.string.custom_oauth_url);
+        String baseUrl = null;
+        String OAuthUrl = null;
         Button btnBoards = (Button) findViewById(R.id.btnListBoards);
         btnLogin = (Button) findViewById(R.id.btnLogin);
         btnLogout = (Button) findViewById(R.id.btnLogout);
@@ -69,7 +73,13 @@ public class MainActivity extends ActionBarActivity {
             Toast.makeText(this, "You need to define the application id", Toast.LENGTH_LONG).show();
         } else {
             PDKClient.setDebugMode(true);
-            pdkClient = PDKClient.configureInstance(this, appID);
+            if(!"defineIt".equals(customUrl)) {
+                baseUrl = customUrl;
+            }
+            if(!"defineIt".equals(customOAuth)) {
+                OAuthUrl = customOAuth;
+            }
+            pdkClient = PDKClient.configureInstance(this, appID, baseUrl, OAuthUrl);
             pdkClient.onConnect(this, new PDKCallback() {
                 // If for whatever reason the onConnect fails we trigger the silent login
                 @Override

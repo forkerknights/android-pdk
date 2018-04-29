@@ -16,6 +16,8 @@ Example: `clientId=12345678980`
 - Implemented a silent login and provided a sample application using it.
 - Implemented support for creating a Pin passing a [Bitmap](https://developer.android.com/reference/android/graphics/Bitmap.html)
 - Implemented support to get Pin's image URLs in different sizes (But it seems that currently Pinterest's API only returns the original image)
+- Implemented support to configure a custom base URL for API calls (A
+mock server for example)
 
 ## Planned changes
 
